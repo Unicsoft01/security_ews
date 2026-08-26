@@ -1,8 +1,10 @@
 from database.models import (
     Dataset,
+    IncidentType,
     Location,
     Role,
-    User
+    SecurityIncident,
+    User,
 )
 
 
@@ -208,3 +210,106 @@ def get_location_by_admin1(
         )
         .first()
     )
+
+# ---------------------------------
+# DATASET CRUD
+# ---------------------------------
+
+def get_dataset_by_filename(
+    db,
+    file_name
+):
+
+    return (
+        db.query(Dataset)
+        .filter(
+            Dataset.file_name
+            == file_name
+        )
+        .first()
+    )
+
+
+def get_or_create_location(
+    db,
+    admin1,
+    latitude=None,
+    longitude=None
+):
+
+    location = (
+        db.query(Location)
+        .filter(
+            Location.admin1 == admin1
+        )
+        .first()
+    )
+
+    if location:
+        return location
+
+    location = Location(
+        admin1=admin1,
+        latitude=latitude,
+        longitude=longitude
+    )
+
+    db.add(location)
+
+    db.flush()
+
+    return location
+
+
+def get_or_create_incident_type(
+    db,
+    event_type,
+    sub_event_type
+):
+
+    incident_type = (
+        db.query(IncidentType)
+        .filter(
+            IncidentType.event_type
+            == event_type,
+
+            IncidentType.sub_event_type
+            == sub_event_type
+        )
+        .first()
+    )
+
+    if incident_type:
+        return incident_type
+
+    incident_type = IncidentType(
+        event_type=event_type,
+        sub_event_type=sub_event_type
+    )
+
+    db.add(
+        incident_type
+    )
+
+    db.flush()
+
+    return incident_type
+
+
+def count_security_incidents(
+    db,
+    dataset_id=None
+):
+
+    query = db.query(
+        SecurityIncident
+    )
+
+    if dataset_id is not None:
+
+        query = query.filter(
+            SecurityIncident.dataset_id
+            == dataset_id
+        )
+
+    return query.count()

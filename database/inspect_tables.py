@@ -27,3 +27,48 @@ def inspect_database():
 
 if __name__ == "__main__":
     inspect_database()
+
+from services.preprocessing import (
+    preprocess_nigeria_dataset
+)
+
+clean_df, report = (
+    preprocess_nigeria_dataset()
+)
+
+st.subheader(
+    "Preprocessing Summary"
+)
+
+col1, col2, col3, col4 = (
+    st.columns(4)
+)
+
+col1.metric(
+    "Original Nigeria Rows",
+    f"{report['original_nigeria_rows']:,}"
+)
+
+col2.metric(
+    "Clean Rows",
+    f"{report['clean_rows']:,}"
+)
+
+col3.metric(
+    "Duplicates Removed",
+    report[
+        "duplicates_removed"
+    ]
+)
+
+col4.metric(
+    "Invalid Rows Removed",
+    report[
+        "invalid_rows_removed"
+    ]
+)
+
+st.metric(
+    "Missing Population Exposure",
+    f"{report['population_exposure_missing']:,}"
+)

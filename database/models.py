@@ -9,7 +9,8 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
-    Text
+    Text,
+    UniqueConstraint,
 )
 
 from sqlalchemy.orm import (
@@ -170,6 +171,14 @@ class Location(Base):
 
 class IncidentType(Base):
     __tablename__ = "incident_types"
+    
+    __table_args__ = (
+        UniqueConstraint(
+            "event_type",
+            "sub_event_type",
+            name="uq_incident_type_pair"
+        ),
+    )
 
     incident_type_id = Column(
         Integer,
