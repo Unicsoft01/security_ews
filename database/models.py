@@ -393,6 +393,51 @@ class WeeklyFeature(Base):
         nullable=True
     )
 
+    violent_events = Column(
+        Integer,
+        default=0
+    )
+
+    high_severity_events = Column(
+        Integer,
+        default=0
+    )
+
+    remote_explosives_ied = Column(
+        Integer,
+        default=0
+    )
+
+    air_drone_strikes = Column(
+        Integer,
+        default=0
+    )
+
+    suicide_bombs = Column(
+        Integer,
+        default=0
+    )
+
+    violent_event_ratio = Column(
+        Float,
+        nullable=True
+    )
+
+    high_severity_ratio = Column(
+        Float,
+        nullable=True
+    )
+
+    events_increasing = Column(
+        Integer,
+        default=0
+    )
+
+    fatalities_increasing = Column(
+        Integer,
+        default=0
+    )
+
 
 class ModelRun(Base):
     __tablename__ = "model_runs"

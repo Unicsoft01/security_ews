@@ -1,6 +1,10 @@
 import os
 from dotenv import load_dotenv
 
+# Define the start and end dates for the model's data range
+MODEL_START_DATE = "2015-01-01"
+MODEL_END_DATE = "2026-08-08"
+
 load_dotenv()
 
 APP_NAME = os.getenv(
