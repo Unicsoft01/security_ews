@@ -1,74 +1,245 @@
 import streamlit as st
-from config.settings import APP_NAME
+
+from config.settings import (
+    APP_NAME
+)
+
+from pages_ui.dashboard_view import (
+    show_dashboard
+)
+
+from pages_ui.login_view import (
+    show_login
+)
+
+from pages_ui.placeholder_view import (
+    show_placeholder
+)
+
+from utils.session import (
+    initialise_session,
+    logout_session,
+)
+
+from services.audit_service import (
+    log_activity
+)
+
+
+# --------------------------------------------------
+# STREAMLIT CONFIGURATION
+# --------------------------------------------------
 
 st.set_page_config(
     page_title=APP_NAME,
     page_icon="🛡️",
-    layout="wide"
-)
-
-st.title(APP_NAME)
-
-st.subheader(
-    "Security Threat Risk Assessment in Nigeria"
-)
-
-st.success(
-    "Development environment successfully configured."
-)
-
-st.write(
-    "ACLED Historical Security Incident Dataset"
-)
-
-st.info(
-    "The system will use Decision Tree and "
-    "Random Forest models to estimate weekly "
-    "security risk levels."
-)
-
-# Testing database connection
-import streamlit as st
-
-from config.settings import APP_NAME
-from database.connection import (
-    check_database_connection
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 
-st.set_page_config(
-    page_title=APP_NAME,
-    page_icon="🛡️",
-    layout="wide"
+# --------------------------------------------------
+# SESSION INITIALISATION
+# --------------------------------------------------
+
+initialise_session()
+
+
+# --------------------------------------------------
+# LOGIN GATE
+# --------------------------------------------------
+
+if not st.session_state[
+    "authenticated"
+]:
+
+    show_login()
+
+    st.stop()
+
+
+# --------------------------------------------------
+# SIDEBAR USER INFORMATION
+# --------------------------------------------------
+
+st.sidebar.title(
+    "AI Security EWS"
+)
+
+st.sidebar.success(
+    f"Logged in as:\n\n"
+    f"{st.session_state['full_name']}"
+)
+
+st.sidebar.caption(
+    f"Role: "
+    f"{st.session_state['role']}"
 )
 
 
-st.title(APP_NAME)
+# --------------------------------------------------
+# NAVIGATION OPTIONS
+# --------------------------------------------------
 
-st.subheader(
-    "Security Threat Risk Assessment "
+navigation_options = [
+    "Dashboard",
+    "Dataset Management",
+    "Data Processing",
+    "Model Evaluation",
+    "Risk Assessment",
+    "Risk Map",
+    "Alerts",
+    "Reports",
+]
+
+
+if (
+    st.session_state[
+        "role"
+    ]
+    == "Administrator"
+):
+
+    navigation_options.append(
+        "Administration"
+    )
+
+
+selected_page = (
+    st.sidebar.radio(
+        "Navigation",
+        navigation_options
+    )
+)
+
+
+# --------------------------------------------------
+# LOGOUT
+# --------------------------------------------------
+
+st.sidebar.divider()
+
+if st.sidebar.button(
+    "Logout",
+    use_container_width=True
+):
+
+    log_activity(
+        st.session_state[
+            "user_id"
+        ],
+        "User logged out of the system."
+    )
+
+    logout_session()
+
+    st.rerun()
+
+
+# --------------------------------------------------
+# PAGE ROUTING
+# --------------------------------------------------
+
+if selected_page == (
+    "Dashboard"
+):
+
+    show_dashboard()
+
+
+elif selected_page == (
+    "Dataset Management"
+):
+
+    show_placeholder(
+        "Dataset Management",
+        "Dataset management interface "
+        "will be implemented in a "
+        "subsequent phase."
+    )
+
+
+elif selected_page == (
+    "Data Processing"
+):
+
+    show_placeholder(
+        "Data Processing",
+        "Data preprocessing and feature "
+        "engineering interface."
+    )
+
+
+elif selected_page == (
+    "Model Evaluation"
+):
+
+    show_placeholder(
+        "Model Evaluation",
+        "Decision Tree and Random Forest "
+        "performance comparison."
+    )
+
+
+elif selected_page == (
+    "Risk Assessment"
+):
+
+    show_placeholder(
+        "Risk Assessment",
+        "Next-week state risk predictions "
+        "will appear here."
+    )
+
+
+elif selected_page == (
+    "Risk Map"
+):
+
+    show_placeholder(
+        "Nigeria Risk Map",
+        "Geographic risk visualisation "
+        "will appear here."
+    )
+
+
+elif selected_page == (
+    "Alerts"
+):
+
+    show_placeholder(
+        "Early Warning Alerts",
+        "Generated Medium and High-Risk "
+        "warnings will appear here."
+    )
+
+
+elif selected_page == (
+    "Reports"
+):
+
+    show_placeholder(
+        "Reports",
+        "Risk assessment and model reports "
+        "will be available here."
+    )
+
+
+elif selected_page == (
+    "Administration"
+):
+
+    show_placeholder(
+        "Administration",
+        "User management and audit logs "
+        "will appear here."
+    )
+
+# Add a System Footer
+st.divider()
+
+st.caption(
+    "AI-Assisted Early Warning System "
+    "for Security Threat Risk Assessment "
     "in Nigeria"
 )
-
-
-db_status = (
-    check_database_connection()
-)
-
-
-if db_status["connected"]:
-
-    st.success(
-        "Database connected successfully: "
-        f"{db_status['database']}"
-    )
-
-else:
-
-    st.error(
-        "Database connection failed."
-    )
-
-    st.code(
-        db_status["error"]
-    )

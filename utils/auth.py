@@ -1,9 +1,11 @@
 import bcrypt
 
 
-def hash_password(
-    password
-):
+def hash_password(password):
+    """
+    Convert plain-text password into
+    a secure bcrypt password hash.
+    """
 
     password_bytes = (
         password.encode(
@@ -25,6 +27,10 @@ def verify_password(
     password,
     password_hash
 ):
+    """
+    Verify plain password against
+    stored bcrypt hash.
+    """
 
     return bcrypt.checkpw(
         password.encode(
