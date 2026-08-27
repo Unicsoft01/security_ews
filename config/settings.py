@@ -5,6 +5,10 @@ from dotenv import load_dotenv
 MODEL_START_DATE = "2015-01-01"
 MODEL_END_DATE = "2026-08-08"
 
+# Define the start and end dates for training and testing datasets
+TRAIN_END_DATE = "2024-12-31"
+TEST_START_DATE = "2025-01-01"
+
 load_dotenv()
 
 APP_NAME = os.getenv(
