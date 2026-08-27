@@ -3,6 +3,10 @@ from pathlib import Path
 
 import joblib
 
+from sklearn.ensemble import (
+    RandomForestClassifier
+)
+
 from sklearn.model_selection import (
     GridSearchCV,
     TimeSeriesSplit,
@@ -10,13 +14,13 @@ from sklearn.model_selection import (
 
 from sklearn.pipeline import Pipeline
 
-from sklearn.tree import (
-    DecisionTreeClassifier
-)
-
 from services.evaluation import (
     evaluate_classifier,
     save_confusion_matrix,
+)
+
+from services.model_interpretation import (
+    get_feature_importance
 )
 
 from services.training import (
@@ -25,35 +29,37 @@ from services.training import (
     prepare_modelling_data,
 )
 
-from services.model_interpretation import (
-    get_feature_importance
-)
-
 
 # --------------------------------------------------
 # OUTPUT PATHS
 # --------------------------------------------------
 
 MODEL_PATH = Path(
-    "models/decision_tree.pkl"
+    "models/random_forest.pkl"
 )
 
 METADATA_PATH = Path(
-    "models/decision_tree_metadata.json"
+    "models/random_forest_metadata.json"
+)
+
+FEATURE_IMPORTANCE_PATH = Path(
+    "data/exports/"
+    "random_forest_feature_importance.csv"
 )
 
 
 # --------------------------------------------------
-# DECISION TREE TUNING
+# RANDOM FOREST TUNING
 # --------------------------------------------------
 
-def tune_decision_tree():
+def tune_random_forest():
     """
-    Train and tune the Decision Tree classifier
-    using time-aware cross-validation.
+    Tune Random Forest using time-aware
+    cross-validation.
     """
 
-    # Prepare modelling dataset
+    # Prepare exactly the same modelling data
+    # used for Decision Tree.
     df, X, y = (
         prepare_modelling_data()
     )
@@ -70,22 +76,23 @@ def tune_decision_tree():
         y
     )
 
-    # Build preprocessing pipeline
+    # Preprocessing
     preprocessor = (
         build_preprocessor(
             X_train
         )
     )
 
-    # Base classifier
+    # Base Random Forest
     classifier = (
-        DecisionTreeClassifier(
+        RandomForestClassifier(
             random_state=42,
-            class_weight="balanced"
+            class_weight="balanced",
+            n_jobs=-1
         )
     )
 
-    # Complete pipeline
+    # Full pipeline
     pipeline = Pipeline(
         steps=[
             (
@@ -99,35 +106,41 @@ def tune_decision_tree():
         ]
     )
 
-    # Hyperparameter search space
+    # ----------------------------------------------
+    # HYPERPARAMETER SEARCH SPACE
+    # ----------------------------------------------
+
     parameter_grid = {
 
-        "classifier__criterion": [
-            "gini",
-            "entropy"
+        "classifier__n_estimators": [
+            100,
+            200,
+            300
         ],
 
         "classifier__max_depth": [
-            4,
-            6,
             8,
-            10,
             12,
+            16,
             None
         ],
 
         "classifier__min_samples_split": [
             2,
             5,
-            10,
-            20
+            10
         ],
 
         "classifier__min_samples_leaf": [
             1,
+            3,
             5,
-            10,
-            20
+            10
+        ],
+
+        "classifier__max_features": [
+            "sqrt",
+            "log2"
         ],
     }
 
@@ -146,18 +159,18 @@ def tune_decision_tree():
         verbose=1
     )
 
-    # Train all candidate models
+    # Train candidate models
     grid_search.fit(
         X_train,
         y_train
     )
 
-    # Best model
+    # Best-performing model
     best_model = (
         grid_search.best_estimator_
     )
 
-    # Evaluate on unseen test data
+    # Test on unseen chronological test set
     (
         metrics,
         report,
@@ -187,13 +200,13 @@ def tune_decision_tree():
 # SAVE MODEL AND METADATA
 # --------------------------------------------------
 
-def save_decision_tree_model(
+def save_random_forest_model(
     grid_search,
     best_model,
     metrics
 ):
     """
-    Save tuned Decision Tree model and metadata.
+    Save trained Random Forest and its metadata.
     """
 
     MODEL_PATH.parent.mkdir(
@@ -210,7 +223,7 @@ def save_decision_tree_model(
     # Prepare metadata
     metadata = {
         "model":
-            "DecisionTreeClassifier",
+            "RandomForestClassifier",
 
         "best_parameters":
             grid_search.best_params_,
@@ -254,7 +267,7 @@ def save_decision_tree_model(
 
 
 # --------------------------------------------------
-# RUN TUNING
+# RUN RANDOM FOREST TUNING
 # --------------------------------------------------
 
 if __name__ == "__main__":
@@ -270,10 +283,10 @@ if __name__ == "__main__":
         X_test,
         y_train,
         y_test,
-    ) = tune_decision_tree()
+    ) = tune_random_forest()
 
     print(
-        "\nDECISION TREE TUNING COMPLETE"
+        "\nRANDOM FOREST TUNING COMPLETE"
     )
 
     print("=" * 60)
@@ -332,95 +345,91 @@ if __name__ == "__main__":
     print(report)
 
     print(
-    "\nCONFUSION MATRIX"
-)
-
-print("=" * 60)
-
-print(matrix)
-
-
-# ----------------------------------------------
-# SAVE CONFUSION MATRIX IMAGE
-# ----------------------------------------------
-
-CONFUSION_MATRIX_PATH = Path(
-    "data/exports/"
-    "decision_tree_confusion_matrix.png"
-)
-
-CONFUSION_MATRIX_PATH.parent.mkdir(
-    parents=True,
-    exist_ok=True
-)
-
-save_confusion_matrix(
-    best_model,
-    X_test,
-    y_test,
-    CONFUSION_MATRIX_PATH,
-    title="Decision Tree Confusion Matrix"
-)
-
-print(
-    "\nConfusion matrix saved to: "
-    f"{CONFUSION_MATRIX_PATH}"
-)
-
-# --------------------------------------------------
-# FEATURE IMPORTANCE
-# --------------------------------------------------
-
-importance = (
-    get_feature_importance(
-        best_model
+        "\nCONFUSION MATRIX"
     )
-)
 
-EXPORT_PATH = Path(
-    "data/exports/"
-    "decision_tree_feature_importance.csv"
-)
+    print("=" * 60)
 
-EXPORT_PATH.parent.mkdir(
-    parents=True,
-    exist_ok=True
-)
+    print(matrix)
 
-importance.to_csv(
-    EXPORT_PATH,
-    index=False
-)
+    # ----------------------------------------------
+    # SAVE CONFUSION MATRIX IMAGE
+    # ----------------------------------------------
+
+    CONFUSION_MATRIX_PATH = Path(
+            "data/exports/"
+            "random_forest_confusion_matrix.png"
+      )
+
+    CONFUSION_MATRIX_PATH.parent.mkdir(
+      parents=True,
+      exist_ok=True
+      )
+
+    save_confusion_matrix(
+      best_model,
+      X_test,
+      y_test,
+      CONFUSION_MATRIX_PATH,
+      title="Random Forest Confusion Matrix"
+      )
+
+    print(
+      "\nConfusion matrix saved to: "
+      f"{CONFUSION_MATRIX_PATH}"
+      )
 
 
+    # ----------------------------------------------
+    # FEATURE IMPORTANCE
+    # ----------------------------------------------
 
-print(
-    f"\nFeature importance saved to: "
-    f"{EXPORT_PATH}"
-)
+    importance = (
+        get_feature_importance(
+            best_model
+        )
+    )
+
+    print(
+        "\nTOP 20 MOST IMPORTANT FEATURES"
+    )
+
+    print("=" * 60)
+
+    print(
+        importance.head(20)
+        .to_string(
+            index=False
+        )
+    )
 
 
+    # ----------------------------------------------
+    # SAVE FEATURE IMPORTANCE
+    # ----------------------------------------------
 
+    FEATURE_IMPORTANCE_PATH.parent.mkdir(
+        parents=True,
+        exist_ok=True
+    )
 
-print(
-    "\nTOP 20 MOST IMPORTANT FEATURES"
-)
-
-print("=" * 60)
-
-print(
-    importance.head(20).to_string(
+    importance.to_csv(
+        FEATURE_IMPORTANCE_PATH,
         index=False
     )
-)
+
+    print(
+        "\nFeature importance saved to: "
+        f"{FEATURE_IMPORTANCE_PATH}"
+    )
 
 
-# --------------------------------------------------
-# SAVE MODEL AND METADATA
-# --------------------------------------------------
+    # ----------------------------------------------
+    # SAVE RANDOM FOREST MODEL
+    # ----------------------------------------------
 
-save_decision_tree_model(
-    grid_search,
-    best_model,
-    metrics
-)
+    save_random_forest_model(
+        grid_search,
+        best_model,
+        metrics
+    )

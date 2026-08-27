@@ -98,28 +98,26 @@ def save_confusion_matrix(
     model,
     X_test,
     y_test,
-    output_path
+    output_path,
+    title="Confusion Matrix"
 ):
 
     predictions = model.predict(
         X_test
     )
 
-    display = (
-        ConfusionMatrixDisplay
-        .from_predictions(
-            y_test,
-            predictions,
-            labels=[
-                "Low",
-                "Medium",
-                "High"
-            ]
-        )
+    ConfusionMatrixDisplay.from_predictions(
+        y_test,
+        predictions,
+        labels=[
+            "Low",
+            "Medium",
+            "High"
+        ]
     )
 
     plt.title(
-        "Decision Tree Confusion Matrix"
+        title
     )
 
     plt.tight_layout()
@@ -130,7 +128,3 @@ def save_confusion_matrix(
     )
 
     plt.close()
-
-
-
-
