@@ -34,6 +34,10 @@ from pages_ui.risk_map_view import (
     show_risk_map
 )
 
+from pages_ui.alerts_view import (
+    show_alerts
+)
+
 
 # --------------------------------------------------
 # STREAMLIT CONFIGURATION
@@ -208,11 +212,7 @@ elif selected_page == (
     "Alerts"
 ):
 
-    show_placeholder(
-        "Early Warning Alerts",
-        "Generated Medium and High-Risk "
-        "warnings will appear here."
-    )
+    show_alerts()
 
 
 elif selected_page == (
