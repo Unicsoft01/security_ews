@@ -30,6 +30,10 @@ from pages_ui.risk_assessment_view import (
     show_risk_assessment
 )
 
+from pages_ui.risk_map_view import (
+    show_risk_map
+)
+
 
 # --------------------------------------------------
 # STREAMLIT CONFIGURATION
@@ -197,11 +201,7 @@ elif selected_page == (
     "Risk Map"
 ):
 
-    show_placeholder(
-        "Nigeria Risk Map",
-        "Geographic risk visualisation "
-        "will appear here."
-    )
+    show_risk_map()
 
 
 elif selected_page == (
