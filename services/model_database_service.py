@@ -1,5 +1,4 @@
 import json
-from datetime import datetime
 from pathlib import Path
 
 from database.connection import (
@@ -12,56 +11,120 @@ from database.models import (
 )
 
 
-MODELS = [
-    {
-        "name":
-            "Decision Tree",
+DECISION_TREE_METADATA = Path(
+    "models/decision_tree_metadata.json"
+)
 
-        "file":
-            "models/decision_tree.pkl",
+RANDOM_FOREST_METADATA = Path(
+    "models/random_forest_metadata.json"
+)
 
-        "metadata":
-            "models/"
-            "decision_tree_metadata.json",
-    },
-
-    {
-        "name":
-            "Random Forest",
-
-        "file":
-            "models/random_forest.pkl",
-
-        "metadata":
-            "models/"
-            "random_forest_metadata.json",
-    },
-]
+SELECTED_METADATA = Path(
+    "models/selected_model_metadata.json"
+)
 
 
-def store_model_results(
-    selected_model_name
-):
+def load_json(path):
+
+    if not path.exists():
+
+        raise FileNotFoundError(
+            f"Required metadata file not found: {path}"
+        )
+
+    with open(
+        path,
+        "r",
+        encoding="utf-8"
+    ) as file:
+
+        return json.load(file)
+
+
+def get_selected_model_name():
+
+    selected_metadata = load_json(
+        SELECTED_METADATA
+    )
+
+    selected_name = (
+        selected_metadata.get(
+            "selected_model_name"
+        )
+    )
+
+    if not selected_name:
+
+        raise ValueError(
+            "selected_model_metadata.json "
+            "does not contain selected_model_name."
+        )
+
+    return selected_name
+
+
+def store_model_results():
 
     db = SessionLocal()
 
     try:
 
-        for item in MODELS:
+        selected_model_name = (
+            get_selected_model_name()
+        )
 
-            metadata_path = Path(
-                item["metadata"]
+        models = [
+            {
+                "display_name":
+                    "Decision Tree",
+
+                "metadata_path":
+                    DECISION_TREE_METADATA,
+
+                "model_file":
+                    "models/decision_tree.pkl",
+            },
+            {
+                "display_name":
+                    "Random Forest",
+
+                "metadata_path":
+                    RANDOM_FOREST_METADATA,
+
+                "model_file":
+                    "models/random_forest.pkl",
+            },
+        ]
+
+        # Prevent duplicate inserts
+        existing_count = (
+            db.query(
+                ModelRun
+            )
+            .count()
+        )
+
+        if existing_count > 0:
+
+            print(
+                "\nModel results already exist "
+                "in the database."
             )
 
-            with open(
-                metadata_path,
-                "r",
-                encoding="utf-8"
-            ) as file:
+            print(
+                f"Existing model runs: "
+                f"{existing_count}"
+            )
 
-                metadata = (
-                    json.load(file)
-                )
+            return
+
+        for item in models:
+
+            metadata = load_json(
+                item[
+                    "metadata_path"
+                ]
+            )
 
             metrics = (
                 metadata[
@@ -69,20 +132,27 @@ def store_model_results(
                 ]
             )
 
+            is_selected = (
+                item[
+                    "display_name"
+                ]
+                == selected_model_name
+            )
+
             model_run = ModelRun(
+
                 model_name=
-                    item["name"],
+                    item[
+                        "display_name"
+                    ],
 
                 model_file=
-                    item["file"],
+                    item[
+                        "model_file"
+                    ],
 
-                selected=(
-                    item["name"]
-                    == selected_model_name
-                ),
-
-                trained_at=
-                    datetime.utcnow()
+                selected=
+                    is_selected
             )
 
             db.add(
@@ -99,29 +169,39 @@ def store_model_results(
                         .model_run_id,
 
                     accuracy=
-                        metrics[
-                            "accuracy"
-                        ],
+                        float(
+                            metrics[
+                                "accuracy"
+                            ]
+                        ),
 
                     precision=
-                        metrics[
-                            "precision_macro"
-                        ],
+                        float(
+                            metrics[
+                                "precision_macro"
+                            ]
+                        ),
 
                     recall=
-                        metrics[
-                            "recall_macro"
-                        ],
+                        float(
+                            metrics[
+                                "recall_macro"
+                            ]
+                        ),
 
                     f1_score=
-                        metrics[
-                            "f1_macro"
-                        ],
+                        float(
+                            metrics[
+                                "f1_macro"
+                            ]
+                        ),
 
                     high_risk_recall=
-                        metrics[
-                            "high_risk_recall"
-                        ],
+                        float(
+                            metrics[
+                                "high_risk_recall"
+                            ]
+                        )
                 )
             )
 
@@ -132,8 +212,19 @@ def store_model_results(
         db.commit()
 
         print(
-            "Model results stored "
-            "successfully."
+            "\nMODEL DATABASE STORAGE COMPLETE"
+        )
+
+        print("=" * 60)
+
+        print(
+            f"Selected model: "
+            f"{selected_model_name}"
+        )
+
+        print(
+            "Decision Tree and Random Forest "
+            "results stored successfully."
         )
 
     except Exception:
@@ -145,3 +236,8 @@ def store_model_results(
     finally:
 
         db.close()
+
+
+if __name__ == "__main__":
+
+    store_model_results()

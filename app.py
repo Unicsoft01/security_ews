@@ -25,6 +25,11 @@ from services.audit_service import (
     log_activity
 )
 
+# Add a System Footer
+from pages_ui.risk_assessment_view import (
+    show_risk_assessment
+)
+
 
 # --------------------------------------------------
 # STREAMLIT CONFIGURATION
@@ -185,11 +190,7 @@ elif selected_page == (
     "Risk Assessment"
 ):
 
-    show_placeholder(
-        "Risk Assessment",
-        "Next-week state risk predictions "
-        "will appear here."
-    )
+ show_risk_assessment()
 
 
 elif selected_page == (
