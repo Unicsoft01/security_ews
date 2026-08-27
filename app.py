@@ -38,6 +38,10 @@ from pages_ui.alerts_view import (
     show_alerts
 )
 
+from pages_ui.reports_view import (
+    show_reports
+)
+
 
 # --------------------------------------------------
 # STREAMLIT CONFIGURATION
@@ -219,11 +223,7 @@ elif selected_page == (
     "Reports"
 ):
 
-    show_placeholder(
-        "Reports",
-        "Risk assessment and model reports "
-        "will be available here."
-    )
+    show_reports()
 
 
 elif selected_page == (
