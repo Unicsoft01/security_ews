@@ -42,6 +42,10 @@ from pages_ui.reports_view import (
     show_reports
 )
 
+from pages_ui.administration_view import (
+    show_administration
+)
+
 
 # --------------------------------------------------
 # STREAMLIT CONFIGURATION
@@ -230,11 +234,7 @@ elif selected_page == (
     "Administration"
 ):
 
-    show_placeholder(
-        "Administration",
-        "User management and audit logs "
-        "will appear here."
-    )
+    show_administration()
 
 # Add a System Footer
 st.divider()
