@@ -1,6 +1,6 @@
 @echo off
 
-title AI Security Early Warning System
+title AI Security Early Warning System By Aleke Promise
 
 cd /d "%~dp0.."
 
