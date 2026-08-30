@@ -158,8 +158,9 @@ def check_python() -> None:
         line(PASS, f"Virtual environment active: {sys.prefix}")
     else:
         line(
-            WARN,
-            "No virtual environment appears to be active. Activate .venv before running the app.",
+            FAIL,
+            "Project virtual environment is not active. Run the checker through run_setup_check.bat.",
+            critical=True,
         )
 
 
@@ -226,18 +227,28 @@ def check_requirements_encoding() -> None:
 def check_packages() -> None:
     section("4. PYTHON DEPENDENCIES")
 
-    missing: List[str] = []
+    failed_packages: List[str] = []
 
     for module_name, package_name in REQUIRED_MODULES.items():
         if importlib.util.find_spec(module_name) is None:
-            missing.append(package_name)
+            failed_packages.append(package_name)
             line(FAIL, f"Missing package: {package_name}", critical=True)
-        else:
-            line(PASS, f"Installed: {package_name}")
+            continue
 
-    if missing:
-        print("\n       Install missing dependencies with:")
-        print("       python -m pip install -r requirements.txt")
+        try:
+            __import__(module_name)
+            line(PASS, f"Installed and importable: {package_name}")
+        except Exception as exc:
+            failed_packages.append(package_name)
+            line(
+                FAIL,
+                f"{package_name} is installed but cannot be imported: {exc}",
+                critical=True,
+            )
+
+    if failed_packages:
+        print("\n       One or more Python packages are missing or incompatible.")
+        print("       Run setup_windows.bat to rebuild/repair the Python 3.11 environment.")
 
 
 

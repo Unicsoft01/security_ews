@@ -46,6 +46,18 @@ from pages_ui.administration_view import (
     show_administration
 )
 
+from pages_ui.dataset_management_view import (
+    show_dataset_management,
+)
+
+from pages_ui.data_processing_view import (
+    show_data_processing,
+)
+
+from pages_ui.model_evaluation_view import (
+    show_model_evaluation,
+)
+
 
 # --------------------------------------------------
 # STREAMLIT CONFIGURATION
@@ -172,34 +184,21 @@ elif selected_page == (
     "Dataset Management"
 ):
 
-    show_placeholder(
-        "Dataset Management",
-        "Dataset management interface "
-        "will be implemented in a "
-        "subsequent phase."
-    )
+    show_dataset_management()
 
 
 elif selected_page == (
     "Data Processing"
 ):
 
-    show_placeholder(
-        "Data Processing",
-        "Data preprocessing and feature "
-        "engineering interface."
-    )
+    show_data_processing()
 
 
 elif selected_page == (
     "Model Evaluation"
 ):
 
-    show_placeholder(
-        "Model Evaluation",
-        "Decision Tree and Random Forest "
-        "performance comparison."
-    )
+    show_model_evaluation()
 
 
 elif selected_page == (
